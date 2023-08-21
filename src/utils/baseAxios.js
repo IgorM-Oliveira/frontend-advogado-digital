@@ -4,7 +4,7 @@ import dayjs from "dayjs";
 import { useContext } from "react";
 import AuthContext from "../context/AuthContext";
 
-const baseURL = "http://localhost:8000";
+const baseURL = "http://localhost:8080";
 
 const useAxios = () => {
   const { authTokens, setUser, setAuthTokens } = useContext(AuthContext);
@@ -23,7 +23,6 @@ const useAxios = () => {
     const response = await axios.post(`${baseURL}/token/refresh/`, {
       refresh: authTokens.refresh
     });
-    localStorage.setItem("authTokens", JSON.stringify(response.data));
     localStorage.setItem("authTokens", JSON.stringify(response.data));
 
     setAuthTokens(response.data);

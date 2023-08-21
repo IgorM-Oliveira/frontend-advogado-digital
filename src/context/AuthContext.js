@@ -14,11 +14,10 @@ export const AuthProvider = ({ children }) => {
             ? JSON.parse(localStorage.getItem("authTokens"))
             : null
     );
-    
 
-    const [user, setUser] = useState(() => 
+    const [user, setUser] = useState(() =>
         localStorage.getItem("authTokens")
-            ? jwt_decode(localStorage.getItem("authTokens"))
+            ? localStorage.getItem("authTokens")
             : null
     );
 
@@ -35,19 +34,22 @@ export const AuthProvider = ({ children }) => {
                 withCredentials: false
             }
         ).then(response => {
-            console.log("Logged In");
-            const {token} = response.data
-            console.log(token)
+            const {authTokens} = response.data
 
-            /*setAuthTokens(token)
-            setUser(jwt_decode(token.access))
+            setAuthTokens(authTokens)
 
-            localStorage.setItem("authTokens", JSON.stringify(token))*/
+            try {
+                setUser(jwt_decode(authTokens.access))
+            } catch (error) {
+                console.error('Error decoding token:', error.message);
+            }
+
+            localStorage.setItem("authTokens", JSON.stringify(authTokens))
 
             history.push("/")
 
             swal.fire({
-                title: "Login Successful",
+                title: "Login bem-sucedido!",
                 icon: "success",
                 toast: true,
                 timer: 6000,
@@ -59,7 +61,7 @@ export const AuthProvider = ({ children }) => {
         .catch(error => {
             console.log("there was a server issue");
             swal.fire({
-                title: "Username or passowrd does not exists",
+                title: "Nome de usuário ou senha não existe!",
                 icon: "error",
                 toast: true,
                 timer: 6000,
@@ -112,7 +114,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem("authTokens")
         history.push("/login")
         swal.fire({
-            title: "YOu have been logged out...",
+            title: "Você foi desconectado...",
             icon: "success",
             toast: true,
             timer: 6000,
@@ -134,7 +136,7 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         if (authTokens) {
-            setUser(jwt_decode(authTokens.access))
+            setUser(jwt_decode(authTokens))
         }
         setLoading(false)
     }, [authTokens, loading])
