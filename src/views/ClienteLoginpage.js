@@ -3,13 +3,13 @@ import { Link } from 'react-router-dom'
 import AuthContext from '../context/AuthContext'
 
 function Loginpage() {
-  const {loginUser} = useContext(AuthContext)
+  const {loginClient} = useContext(AuthContext)
   const handleSubmit = e => {
     e.preventDefault()
     const user = e.target.user.value
     const password = e.target.password.value
 
-    user.length > 0 && loginUser(user, password)
+    user.length > 0 && loginClient(user, password)
   }
 
   return (
@@ -34,7 +34,7 @@ function Loginpage() {
                                     className="fas fa-cubes fa-2x me-3"
                                     style={{ color: "#ff6219" }}
                                 />
-                                <span className="h2 fw-bold mb-0">Bem vindo 👋</span>
+                                <span className="h2 fw-bold mb-0">Portal do Cliente</span>
                               </div>
                             </div>
                             <h5
@@ -51,7 +51,7 @@ function Loginpage() {
                                   name='user'
                               />
                               <label className="form-label" htmlFor="form_user">
-                                Usuário
+                                CPF
                               </label>
                             </div>
                             <div className="form-outline mb-4">
@@ -77,8 +77,8 @@ function Loginpage() {
                               Forgot password?
                             </a>*/}
                             <p className="mb-5 pb-lg-2" style={{ color: "#393f81" }}>
-                              <Link to="/login_client" style={{ color: "#393f81" }}>
-                                Login do Cliente
+                              <Link to="/login" style={{ color: "#393f81" }}>
+                                voltar
                               </Link>
                             </p>
                           </form>
