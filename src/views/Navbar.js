@@ -4,18 +4,16 @@ import AuthContext from '../context/AuthContext'
 import { Link } from 'react-router-dom'
 
 function Navbar() {
-
   const {user, logoutUser} = useContext(AuthContext)
   const token = localStorage.getItem("authTokens")
 
   if (token){
-    const decoded = jwt_decode(token) 
-    var user_id = decoded.user_id
+    const decoded = jwt_decode(token)
   }
 
   return (
     <div>
-        <nav className="navbar navbar-expand-lg navbar-dark fixed-top bg-dark">
+      <nav className="navbar navbar-expand-lg navbar-dark fixed-top bg-dark">
         <div className="container-fluid">
           <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span className="navbar-toggler-icon"></span>
@@ -31,18 +29,31 @@ function Navbar() {
                   <li className="nav-item">
                     <a className="nav-link" href="/dashboard">Dashboard</a>
                   </li>
-                  <li className="nav-item">
-                    <a className="nav-link" onClick={logoutUser} style={{cursor:"pointer"}}>Logout</a>
-                  </li>
                 </>
               }
+            </ul>
 
+            <ul className="navbar-nav ms-auto ">
               {token === null &&
                   <>
                     <li className="nav-item">
                       <Link className="nav-link" to="/login">Login</Link>
                     </li>
                   </>
+              }
+
+              {token !== null &&
+                <>
+                  <li className="nav-item dropdown justify-content-end">
+                    <a className="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                      {user?.nome}
+                    </a>
+                    <ul className="dropdown-menu">
+                      <li><a className="dropdown-item" href="/profile">Perfil</a></li>
+                      <li><a className="dropdown-item" onClick={logoutUser} style={{cursor:"pointer"}}>Logout</a></li>
+                    </ul>
+                  </li>
+                </>
               }
             </ul>
           </div>
