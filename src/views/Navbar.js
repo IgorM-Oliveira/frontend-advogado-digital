@@ -1,15 +1,10 @@
 import {useContext} from 'react'
-import jwt_decode from "jwt-decode"
 import AuthContext from '../context/AuthContext'
 import { Link } from 'react-router-dom'
 
 function Navbar() {
   const {user, logoutUser} = useContext(AuthContext)
   const token = localStorage.getItem("authTokens")
-
-  if (token){
-    const decoded = jwt_decode(token)
-  }
 
   return (
     <div>
@@ -20,26 +15,20 @@ function Navbar() {
           </button>
           <div className="collapse navbar-collapse" id="navbarNav">
             <ul className="navbar-nav ">
-              <li className="nav-item">
-                <a className="nav-link active" aria-current="page" href="/">Home</a>
-              </li>
+              <li className="nav-item"><a className="nav-link active" aria-current="page" href="/">Home</a></li>
 
               {token !== null &&
-                <>
-                  <li className="nav-item">
-                    <a className="nav-link" href="/dashboard">Dashboard</a>
-                  </li>
-                </>
+                  <li className="nav-item"><a className="nav-link" href="/dashboard">Dashboard</a></li>
+              }
+
+              {(user?.function === 'advogado' || user?.adm === true) &&
+                  <li className="nav-item"><a className="nav-link" href="/processos">Processos</a></li>
               }
             </ul>
 
             <ul className="navbar-nav ms-auto ">
               {token === null &&
-                  <>
-                    <li className="nav-item">
-                      <Link className="nav-link" to="/login">Login</Link>
-                    </li>
-                  </>
+                  <li className="nav-item"><Link className="nav-link" to="/login">Login</Link></li>
               }
 
               {token !== null &&
@@ -50,7 +39,13 @@ function Navbar() {
                     </a>
                     <ul className="dropdown-menu">
                       <li><a className="dropdown-item" href="/profile">Perfil</a></li>
-                      <li><a className="dropdown-item" onClick={logoutUser} style={{cursor:"pointer"}}>Logout</a></li>
+                      {user?.adm === true &&
+                          <li><a className="dropdown-item" href="/advogados">Advogados</a></li>
+                      }
+                      {(user?.function === 'advogado' || user?.adm === true) &&
+                          <li><a className="dropdown-item" href="/clients">Clientes</a></li>
+                      }
+                      <li><a className="dropdown-item" onClick={logoutUser}>Sair</a></li>
                     </ul>
                   </li>
                 </>

@@ -1,43 +1,113 @@
-import {useState, useEffect} from 'react'
+import {useState, useEffect, useContext} from 'react'
+import {useHistory} from "react-router-dom";
+
 import useAxios from "../utils/useAxios"
-import jwtDecode from 'jwt-decode'
-function Dashboard() {
-  const handleSubmit = e => {
+
+import swal from "sweetalert2";
+import AuthContext from "../context/AuthContext";
+
+function Profile() {
+  const history = useHistory();
+  const {user} = useContext(AuthContext)
+
+  const [password, setPassword] = useState('');
+  const [passwordStrength, setPasswordStrength] = useState('');
+  const [passwordStrengthRepeat, setPasswordStrengthRepeat] = useState('');
+
+  const handlePasswordChange = (event) => {
+    const newPassword = event.target.value;
+    setPassword(newPassword);
+    setPasswordStrength(checkPasswordStrength(newPassword));
+  };
+
+  const handlePasswordChangeRepeat = (event) => {
+    const newPasswordRepeat = event.target.value;
+    if (newPasswordRepeat === password) {
+      setPasswordStrengthRepeat('Igual');
+    } else {
+      setPasswordStrengthRepeat('Senha não corresponde');
+    }
+  };
+
+  const checkPasswordStrength = (password) => {
+    if (password.length < 8) {
+      return <span style={{ color: "red" }}>Fraca</span>;
+    } else if (password.match(/[a-zA-Z]/) && password.match(/[0-9]/)) {
+      return <span style={{ color: "green" }}>Forte</span>;
+    } else {
+      return <span style={{ color: "yellow" }}>Média</span>;
+    }
+  };
+
+  const handleSubmit = async e => {
     e.preventDefault()
-    // console.log(e)
+
+    const data = []
+
+    data.push({nome: e.target.nome.value,
+      contato: e.target.contato.value,
+      cpf: e.target.cpf.value,
+      data_nasc: e.target.data_nasc.value,
+      sexo: e.target.sexo.value,
+      logradouro: e.target.logradouro.value,
+      endereco: e.target.endereco.value,
+      cep: e.target.cep.value,
+      numberEnde: e.target.numberEnde.value,
+      complemento: e.target.complemento.value,
+      cidade: e.target.cidade.value,
+      bairro: e.target.bairro.value,
+      emial: e.target.emial.value,
+      senha: e.target.new_senha.value})
+
+    if (e.target.new_senha.value === e.target.repeat_senha.value) {
+      if (user.function === 'advogado') {
+        await api.put(`/advogados/${user?.id}`, ...data)
+            .then(() => {
+              history.push('/');
+            })
+            .catch(function (error) {
+              console.error(error);
+            });
+      } else {
+        await api.get(`/clientes/${user?.id}`)
+      }
+    } else {
+      swal.fire({
+        title: "Login bem-sucedido!",
+        icon: "success",
+        toast: true,
+        timer: 3000,
+        position: 'top-right',
+        timerProgressBar: true,
+        showConfirmButton: false,
+      })
+    }
   }
 
-  (() => {
-    'use strict'
-
-    // Fetch all the forms we want to apply custom Bootstrap validation styles to
-    const forms = document.querySelectorAll('.needs-validation')
-
-    // Loop over them and prevent submission
-    Array.from(forms).forEach(form => {
-      form.addEventListener('submit', event => {
-        if (!form.checkValidity()) {
-          event.preventDefault()
-          event.stopPropagation()
-        }
-
-        form.classList.add('was-validated')
-      }, false)
-    })
-  })()
-
   const api = useAxios();
-  const token = localStorage.getItem("authTokens")
 
   useEffect(() => {
     const fetchData = async () => {
       try{
-        const decode = jwtDecode(token)
-        const response = await api.get(`/advogados/${decode?.id}`)
-        console.log(response)
-        // setRes(response.data.response)
+        const response = user.function === 'advogado' ? await api.get(`/advogados/${user?.id}`) : await api.get(`/clientes/${user?.id}`)
+
+        document.getElementById('nome').value = response.data.nome
+        document.getElementById('contato').value = response.data.contato
+        document.getElementById('cpf').value = response.data.cpf
+        document.getElementById('data_nasc').value = new Date(response.data.data_nasc).toISOString().split('T')[0]
+        document.getElementById('sexo').value = response.data.sexo
+        document.getElementById('logradouro').value = response.data.logradouro
+        document.getElementById('endereco').value = response.data.endereco
+        document.getElementById('cep').value = response.data.cep
+        document.getElementById('numberEnde').value = response.data.numberende
+        document.getElementById('complemento').value = response.data.complemento
+        document.getElementById('cidade').value = response.data.cidade
+        document.getElementById('bairro').value = response.data.bairro
+        document.getElementById('emial').value = response.data.emial
       } catch (error) {
-        console.log(error);
+        console.error(error)
+        localStorage.removeItem("authTokens")
+        history.push('/');
       }
     }
     fetchData()
@@ -52,71 +122,9 @@ function Dashboard() {
                 <div className="sidebar-sticky">
                   <ul className="nav flex-column">
                     <li className="nav-item">
-                      <a className="nav-link active" href="#">
+                      <a className="nav-link active" href="/dashboard">
                         <span data-feather="home" />
-                        Dashboard <span className="sr-only">(current)</span>
-                      </a>
-                    </li>
-                    <li className="nav-item">
-                      <a className="nav-link" href="#">
-                        <span data-feather="file" />
-                        Orders
-                      </a>
-                    </li>
-                    <li className="nav-item">
-                      <a className="nav-link" href="#">
-                        <span data-feather="shopping-cart" />
-                        Products
-                      </a>
-                    </li>
-                    <li className="nav-item">
-                      <a className="nav-link" href="#">
-                        <span data-feather="users" />
-                        Customers
-                      </a>
-                    </li>
-                    <li className="nav-item">
-                      <a className="nav-link" href="#">
-                        <span data-feather="bar-chart-2" />
-                        Reports
-                      </a>
-                    </li>
-                    <li className="nav-item">
-                      <a className="nav-link" href="#">
-                        <span data-feather="layers" />
-                        Integrations
-                      </a>
-                    </li>
-                  </ul>
-                  <h6 className="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
-                    <span>Saved reports</span>
-                    <a className="d-flex align-items-center text-muted" href="#">
-                      <span data-feather="plus-circle" />
-                    </a>
-                  </h6>
-                  <ul className="nav flex-column mb-2">
-                    <li className="nav-item">
-                      <a className="nav-link" href="#">
-                        <span data-feather="file-text" />
-                        Current month
-                      </a>
-                    </li>
-                    <li className="nav-item">
-                      <a className="nav-link" href="#">
-                        <span data-feather="file-text" />
-                        Last quarter
-                      </a>
-                    </li>
-                    <li className="nav-item">
-                      <a className="nav-link" href="#">
-                        <span data-feather="file-text" />
-                        Social engagement
-                      </a>
-                    </li>
-                    <li className="nav-item">
-                      <a className="nav-link" href="#">
-                        <span data-feather="file-text" />
-                        Year-end sale
+                        Dashboard
                       </a>
                     </li>
                   </ul>
@@ -126,40 +134,103 @@ function Dashboard() {
                 <div className="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
                   <h1 className="h2">Meu Perfil</h1>
                 </div>
-                <h2>Dados Gerais</h2>
-                <div className="table-responsive" style={{ overflowX: "visible" }}>
-                  <form className="row g-3 needs-validation" onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit}>
+                  <div className="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+                    <h1 className="h3">Dados Gerais</h1>
+                  </div>
 
-                    <div className="col-md-6">
-                      <label htmlFor="validationCustom01" className="form-label">Nome Completo</label>
-                      <input type="text" className="form-control" id="validationCustom01"/>
+                  <div className="table-responsive" style={{ overflowX: "visible" }}>
+                    <div className="row g-3 needs-validation">
+                      <div className="col-md-10">
+                        <label htmlFor="nome" className="form-label">Nome Completo</label>
+                        <input type="text" className="form-control" id="nome"/>
+                      </div>
+                      <div className="col-md-2">
+                        <label htmlFor="contato" className="form-label">Contato Principal</label>
+                        <input type="text" className="form-control" id="contato"/>
+                      </div>
+                      <div className="col-md-6">
+                        <label htmlFor="emial" className="form-label">E-Mail</label>
+                        <input type="text" className="form-control" id="emial"/>
+                      </div>
+                      <div className="col-md-2">
+                        <label htmlFor="cpf" className="form-label">CPF</label>
+                        <input type="text" className="form-control" id="cpf"/>
+                      </div>
+                      <div className="col-md-2">
+                        <label htmlFor="sexo" className="form-label">Sexo</label>
+                        <input type="text" className="form-control" id="sexo"/>
+                      </div>
+                      <div className="col-md-2">
+                        <label htmlFor="data_nasc" className="form-label">Data de Nascimento</label>
+                        <input type="date" className="form-control" id="data_nasc"/>
+                      </div>
                     </div>
-                    <div className="col-md-2">
-                      <label htmlFor="validationCustom02" className="form-label">CPF</label>
-                      <input type="text" className="form-control" id="validationCustom02"/>
-                    </div>
-                    <div className="col-md-2">
-                      <label htmlFor="validationCustomUsername" className="form-label">Sexo</label>
-                      <input type="text" className="form-control" id="validationCustom03"/>
-                    </div>
-                    <div className="col-md-2">
-                      <label htmlFor="validationCustomUsername" className="form-label">Data de Nascimento</label>
-                      <input type="date" className="form-control" id="validationCustom03"/>
-                    </div>
+                  </div>
 
-                    <div className="col-md-6">
-                      <label htmlFor="validationCustom03" className="form-label">E-Mail</label>
-                      <input type="text" className="form-control" id="validationCustom04"/>
+                  <div className="pt-3 d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+                    <h1 className="h3">Endereço</h1>
+                  </div>
+
+                  <div className="table-responsive" style={{ overflowX: "visible" }}>
+                    <div className="row g-3 needs-validation">
+                      <div className="col-md-3">
+                        <label htmlFor="cep" className="form-label">CEP</label>
+                        <input type="text" className="form-control" id="cep"/>
+                      </div>
+                      <div className="col-md-7">
+                        <label htmlFor="endereco" className="form-label">Endereço</label>
+                        <input type="text" className="form-control" id="endereco"/>
+                      </div>
+                      <div className="col-md-2">
+                        <label htmlFor="numberEnde" className="form-label">Número</label>
+                        <input type="text" className="form-control" id="numberEnde"/>
+                      </div>
+                      <div className="col-md-4">
+                        <label htmlFor="bairro" className="form-label">Bairro</label>
+                        <input type="text" className="form-control" id="bairro"/>
+                      </div>
+                      <div className="col-md-2">
+                        <label htmlFor="logradouro" className="form-label">Logradouro</label>
+                        <input type="text" className="form-control" id="logradouro"/>
+                      </div>
+                      <div className="col-md-2">
+                        <label htmlFor="complemento" className="form-label">Complemento</label>
+                        <input type="text" className="form-control" id="complemento"/>
+                      </div>
+                      <div className="col-md-4">
+                        <label htmlFor="cidade" className="form-label">Cidade</label>
+                        <input type="text" className="form-control" id="cidade"/>
+                      </div>
                     </div>
-                    <div className="col-md-3">
-                      <label htmlFor="validationCustom05" className="form-label">Zip</label>
-                      <input type="text" className="form-control" id="validationCustom05"/>
+                  </div>
+
+                  <div className="pt-3 d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+                    <h1 className="h3">Endereço</h1>
+                  </div>
+
+                  <div className="table-responsive" style={{ overflowX: "visible" }}>
+                    <div className="row g-3 needs-validation">
+                      <div className="col-md-4">
+                        <label htmlFor="old_senha" className="form-label">Senha Atual</label>
+                        <input type="password" className="form-control" id="old_senha"/>
+                      </div>
+                      <div className="col-md-4">
+                        <label htmlFor="new_senha" className="form-label">Nova Senha</label>
+                        <input type="password" value={password} onChange={handlePasswordChange} className="form-control" id="new_senha"/>
+                        <p>{passwordStrength}</p>
+                      </div>
+                      <div className="col-md-4">
+                        <label htmlFor="repeat_senha" className="form-label">Repetir Senha</label>
+                        <input type="password" onChange={handlePasswordChangeRepeat} className="form-control" id="repeat_senha"/>
+                        <p>{passwordStrengthRepeat}</p>
+                      </div>
                     </div>
-                    <div className="col-12">
-                      <button className="btn btn-primary" type="submit">Submit form</button>
-                    </div>
-                  </form>
-                </div>
+                  </div>
+                  <div className="pt-4 col-12">
+                    <button className="btn btn-primary" type="submit">Salvar</button>
+                  </div>
+                </form>
               </main>
             </div>
           </div>
@@ -169,4 +240,4 @@ function Dashboard() {
   )
 }
 
-export default Dashboard
+export default Profile

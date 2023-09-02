@@ -52,7 +52,7 @@ export const AuthProvider = ({ children }) => {
                 title: "Login bem-sucedido!",
                 icon: "success",
                 toast: true,
-                timer: 6000,
+                timer: 3000,
                 position: 'top-right',
                 timerProgressBar: true,
                 showConfirmButton: false,
@@ -64,12 +64,58 @@ export const AuthProvider = ({ children }) => {
                 title: "Nome de usuário ou senha não existe!",
                 icon: "error",
                 toast: true,
-                timer: 6000,
+                timer: 3000,
                 position: 'top-right',
                 timerProgressBar: true,
                 showConfirmButton: false,
             })
         })
+    }
+
+    const loginClient = async (user, password) => {
+        axios.post('/login/client', {
+                user: user,
+                senha: password,
+            }, {
+                withCredentials: false
+            }
+        ).then(response => {
+            const {authTokens} = response.data
+
+            setAuthTokens(authTokens)
+
+            try {
+                setUser(jwt_decode(authTokens.access))
+            } catch (error) {
+                console.error('Error decoding token:', error.message);
+            }
+
+            localStorage.setItem("authTokens", JSON.stringify(authTokens))
+
+            history.push("/")
+
+            swal.fire({
+                title: "Login bem-sucedido!",
+                icon: "success",
+                toast: true,
+                timer: 3000,
+                position: 'top-right',
+                timerProgressBar: true,
+                showConfirmButton: false,
+            })
+        })
+            .catch(error => {
+                console.log("there was a server issue");
+                swal.fire({
+                    title: "Nome de usuário ou senha não existe!",
+                    icon: "error",
+                    toast: true,
+                    timer: 3000,
+                    position: 'top-right',
+                    timerProgressBar: true,
+                    showConfirmButton: false,
+                })
+            })
     }
 
     const registerUser = async (email, username, password, password2) => {
@@ -88,7 +134,7 @@ export const AuthProvider = ({ children }) => {
                 title: "Registration Successful, Login Now",
                 icon: "success",
                 toast: true,
-                timer: 6000,
+                timer: 3000,
                 position: 'top-right',
                 timerProgressBar: true,
                 showConfirmButton: false,
@@ -100,7 +146,7 @@ export const AuthProvider = ({ children }) => {
                 title: "An Error Occured " + response.status,
                 icon: "error",
                 toast: true,
-                timer: 6000,
+                timer: 3000,
                 position: 'top-right',
                 timerProgressBar: true,
                 showConfirmButton: false,
@@ -117,7 +163,7 @@ export const AuthProvider = ({ children }) => {
             title: "Você foi desconectado...",
             icon: "success",
             toast: true,
-            timer: 6000,
+            timer: 3000,
             position: 'top-right',
             timerProgressBar: true,
             showConfirmButton: false,
@@ -131,6 +177,7 @@ export const AuthProvider = ({ children }) => {
         setAuthTokens,
         registerUser,
         loginUser,
+        loginClient,
         logoutUser,
     }
 
