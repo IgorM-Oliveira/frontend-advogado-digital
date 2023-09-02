@@ -1,9 +1,14 @@
-import {useState, useEffect} from 'react'
+import {useState, useEffect, useContext} from 'react'
 
 import swal from "sweetalert2";
-import {createClient, deleteClient, editClient, getClient, getClientById} from "../router/clients";
+import {createClient, deleteClient, editClient, getClientById, getClientVinculados} from "../router/clients";
+import AuthContext from "../context/AuthContext";
+import {useHistory} from "react-router-dom";
 
 function Clients() {
+  const history = useHistory();
+  const {user} = useContext(AuthContext)
+
   const [reload, setReload] = useState()
   const [status, setStatus] = useState(true)
   const [edit, setEdit] = useState([false, null])
@@ -44,7 +49,9 @@ function Clients() {
 
     const data = []
 
-    data.push({nome: e.target.nome.value,
+    data.push({
+      advogado_id: user.id,
+      nome: e.target.nome.value,
       contato: e.target.contato.value,
       cpf: e.target.cpf.value,
       data_nasc: e.target.data_nasc.value,
@@ -60,34 +67,63 @@ function Clients() {
       senha: e.target.new_senha.value})
 
     if (e.target.new_senha.value === e.target.repeat_senha.value) {
+      console.log(edit[0])
       if (edit[0]) {
         await editClient(edit[1], ...data)
+          .then(async () => {
+            setEdit([false, null])
+            setStatus(true)
+            setReload(new Date())
 
-        setEdit([false, null])
-
-        await swal.fire({
-          title: "Cliente editado",
-          icon: "success",
-          toast: true,
-          timer: 6000,
-          position: 'top-right',
-          timerProgressBar: true,
-          showConfirmButton: false,
-        })
+            await swal.fire({
+              title: "Cliente editado",
+              icon: "success",
+              toast: true,
+              timer: 3000,
+              position: 'top-right',
+              timerProgressBar: true,
+              showConfirmButton: false,
+            })
+          })
+          .catch(async () => {
+            await swal.fire({
+              title: "Error ao editar cliente",
+              icon: "error",
+              toast: true,
+              timer: 3000,
+              position: 'top-right',
+              timerProgressBar: true,
+              showConfirmButton: false,
+            })
+          })
       } else {
         await createClient(...data)
-        setEdit([false, null])
-        setStatus(true)
+          .then(async () => {
+            setEdit([false, null])
+            setStatus(true)
+            setReload(new Date())
 
-        await swal.fire({
-          title: "Cliente criado",
-          icon: "success",
-          toast: true,
-          timer: 6000,
-          position: 'top-right',
-          timerProgressBar: true,
-          showConfirmButton: false,
-        })
+            await swal.fire({
+              title: "Cliente criado",
+              icon: "",
+              toast: true,
+              timer: 3000,
+              position: 'top-right',
+              timerProgressBar: true,
+              showConfirmButton: false,
+            })
+          })
+          .catch(async () => {
+            await swal.fire({
+              title: "Error ao cadastrar cliente",
+              icon: "error",
+              toast: true,
+              timer: 3000,
+              position: 'top-right',
+              timerProgressBar: true,
+              showConfirmButton: false,
+            })
+          })
       }
 
       setReload(new Date())
@@ -96,7 +132,7 @@ function Clients() {
         title: "Login bem-sucedido!",
         icon: "success",
         toast: true,
-        timer: 6000,
+        timer: 3000,
         position: 'top-right',
         timerProgressBar: true,
         showConfirmButton: false,
@@ -107,10 +143,10 @@ function Clients() {
   useEffect(() => {
     (async () => {
       try{
-        setClient(await getClient())
+        setClient(await getClientVinculados(user.id))
       } catch (error) {
-        // localStorage.removeItem("authTokens")
-        // history.push('/');
+        localStorage.removeItem("authTokens")
+        history.push('/');
       }
     })()
   }, [reload])
@@ -123,7 +159,7 @@ function Clients() {
             title: "Você removeu o cliente!",
             icon: "success",
             toast: true,
-            timer: 6000,
+            timer: 3000,
             position: 'top-right',
             timerProgressBar: true,
             showConfirmButton: false,
@@ -134,7 +170,7 @@ function Clients() {
             title: "Algo deu errado ao remover o cliente!",
             icon: "error",
             toast: true,
-            timer: 6000,
+            timer: 3000,
             position: 'top-right',
             timerProgressBar: true,
             showConfirmButton: false,

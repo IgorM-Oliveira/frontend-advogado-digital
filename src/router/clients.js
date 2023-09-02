@@ -7,6 +7,11 @@ export const getClient = async () => {
     return data;
 };
 
+export const getClientVinculados = async (id) => {
+    const { data } = await api.get(`/clientes/vinculados/${id}`,);
+    return data;
+};
+
 export const getClientById = async (id) => {
     const { data } = await api.get(`/clientes/${id}`);
     return data;

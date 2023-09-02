@@ -1,14 +1,14 @@
-import {useState, useEffect} from 'react'
+import {useState, useEffect, useContext} from 'react'
 import {useHistory} from "react-router-dom";
 
 import useAxios from "../utils/useAxios"
-import jwtDecode from 'jwt-decode'
 
 import swal from "sweetalert2";
+import AuthContext from "../context/AuthContext";
 
 function Profile() {
   const history = useHistory();
-  const [res, setRes] = useState("")
+  const {user} = useContext(AuthContext)
 
   const [password, setPassword] = useState('');
   const [passwordStrength, setPasswordStrength] = useState('');
@@ -59,28 +59,24 @@ function Profile() {
       emial: e.target.emial.value,
       senha: e.target.new_senha.value})
 
-    const newString = token.replace('"', "");
-    const decode = jwtDecode(newString.replace('"', ""))
-
     if (e.target.new_senha.value === e.target.repeat_senha.value) {
-      if (decode.function === 'advogado') {
-        await api.put(`/advogados/${decode?.id}`, ...data)
-            .then(function (response) {
+      if (user.function === 'advogado') {
+        await api.put(`/advogados/${user?.id}`, ...data)
+            .then(() => {
               history.push('/');
-              console.log(response);
             })
             .catch(function (error) {
               console.error(error);
             });
       } else {
-        await api.get(`/clientes/${decode?.id}`)
+        await api.get(`/clientes/${user?.id}`)
       }
     } else {
       swal.fire({
         title: "Login bem-sucedido!",
         icon: "success",
         toast: true,
-        timer: 6000,
+        timer: 3000,
         position: 'top-right',
         timerProgressBar: true,
         showConfirmButton: false,
@@ -89,15 +85,11 @@ function Profile() {
   }
 
   const api = useAxios();
-  const token = localStorage.getItem("authTokens")
 
   useEffect(() => {
     const fetchData = async () => {
       try{
-        const newString = token.replace('"', "");
-        const decode = jwtDecode(newString.replace('"', ""))
-
-        const response = decode.function === 'advogado' ? await api.get(`/advogados/${decode?.id}`) : await api.get(`/clientes/${decode?.id}`)
+        const response = user.function === 'advogado' ? await api.get(`/advogados/${user?.id}`) : await api.get(`/clientes/${user?.id}`)
 
         document.getElementById('nome').value = response.data.nome
         document.getElementById('contato').value = response.data.contato
@@ -112,17 +104,14 @@ function Profile() {
         document.getElementById('cidade').value = response.data.cidade
         document.getElementById('bairro').value = response.data.bairro
         document.getElementById('emial').value = response.data.emial
-
-        setRes(response.data)
       } catch (error) {
+        console.error(error)
         localStorage.removeItem("authTokens")
         history.push('/');
       }
     }
     fetchData()
   }, [])
-
-  console.log(res)
 
   return (
       <div>
