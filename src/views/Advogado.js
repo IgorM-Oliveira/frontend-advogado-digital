@@ -225,6 +225,7 @@ function Advogado() {
                   rules={[
                     {
                       required: true,
+                      message: 'Nome requerido',
                     },
                   ]}
                   initialValue={attorney.nome}
@@ -239,6 +240,7 @@ function Advogado() {
                   rules={[
                     {
                       required: true,
+                      message: 'Contato requerido',
                     },
                   ]}
                   initialValue={attorney.contato}
@@ -254,6 +256,7 @@ function Advogado() {
                   rules={[
                     {
                       required: true,
+                      message: 'E-Mail requerido',
                     },
                   ]}
                   initialValue={attorney.emial}
@@ -268,6 +271,7 @@ function Advogado() {
                   rules={[
                     {
                       required: true,
+                      message: 'CPF requerido',
                     },
                   ]}
                   initialValue={attorney.cpf}

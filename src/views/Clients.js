@@ -227,6 +227,7 @@ function Clients() {
                   rules={[
                     {
                       required: true,
+                      message: 'Nome requerido',
                     },
                   ]}
                   initialValue={client.nome}
@@ -241,6 +242,7 @@ function Clients() {
                   rules={[
                     {
                       required: true,
+                      message: 'Contato requerido',
                     },
                   ]}
                   initialValue={client.contato}
@@ -256,6 +258,7 @@ function Clients() {
                   rules={[
                     {
                       required: true,
+                      message: 'E-Mail requerido',
                     },
                   ]}
                   initialValue={client.emial}
@@ -270,6 +273,7 @@ function Clients() {
                   rules={[
                     {
                       required: true,
+                      message: 'CPF requerido',
                     },
                   ]}
                   initialValue={client.cpf}

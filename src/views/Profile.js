@@ -135,6 +135,7 @@ function Profile() {
                 rules={[
                   {
                     required: true,
+                    message: 'Contato requerido',
                   },
                 ]}
                 initialValue={client.nome}
@@ -149,6 +150,7 @@ function Profile() {
                 rules={[
                   {
                     required: true,
+                    message: 'Contato requerido',
                   },
                 ]}
                 initialValue={client.contato}
@@ -164,6 +166,7 @@ function Profile() {
                 rules={[
                   {
                     required: true,
+                    message: 'E-Mail requerido',
                   },
                 ]}
                 initialValue={client.emial}
@@ -178,6 +181,7 @@ function Profile() {
                 rules={[
                   {
                     required: true,
+                    message: 'CPF requerido',
                   },
                 ]}
                 initialValue={client.cpf}

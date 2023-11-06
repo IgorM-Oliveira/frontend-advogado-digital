@@ -208,6 +208,7 @@ function Processos() {
                 rules={[
                   {
                     required: true,
+                    message: 'Número requerido',
                   },
                 ]}
                 initialValue={processo.numero}
@@ -222,6 +223,7 @@ function Processos() {
                 rules={[
                   {
                     required: true,
+                    message: 'Comanda requerido',
                   },
                 ]}
                 initialValue={processo.comanda}
@@ -236,6 +238,7 @@ function Processos() {
                 rules={[
                   {
                     required: true,
+                    message: 'Tipo requerido',
                   },
                 ]}
                 initialValue={processo.tipo}
@@ -257,6 +260,7 @@ function Processos() {
                 rules={[
                   {
                     required: true,
+                    message: 'Cliente requerido',
                   },
                 ]}
                 initialValue={processo.cliente}
