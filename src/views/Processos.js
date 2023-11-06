@@ -1,5 +1,6 @@
 import {useState, useEffect, useContext} from 'react'
-import {Select, Col, Button, Form, Input, Typography, Row, InputNumber, Divider} from 'antd';
+import { UploadOutlined } from '@ant-design/icons';
+import {Select, Col, Button, Form, Input, Typography, Row, InputNumber, Divider, Upload, Space, Table, Layout} from 'antd';
 
 import swal from "sweetalert2";
 import {
@@ -7,13 +8,15 @@ import {
   deleteProcessos,
   editProcessos,
   getProcessosById, getProcessosVinculados,
-  getTiposProcessos
+  getTiposProcessos, uploadProcessos, uploadProcessosRemove
 } from "../router/processos";
 import {getClientVinculados} from "../router/clients";
 import AuthContext from "../context/AuthContext";
 import {useHistory} from "react-router-dom";
 
 const { Title } = Typography;
+const { Content } = Layout;
+const { Column } = Table;
 
 function Processos() {
   const history = useHistory();
@@ -27,12 +30,36 @@ function Processos() {
 
   const [processos, setProcessos] = useState([])
   const [processo, setProcesso] = useState([])
+  const [processoFiles, setProcessoFiles] = useState([])
   const [client, setClient] = useState([])
   const [tipos, setTipos] = useState([])
+
+  const [fileList, setFileList] = useState([]);
+  const [fileListRemove] = useState([]);
+
+  const props = {
+    listType: 'picture',
+    onRemove: (file) => {
+      fileListRemove.push(file);
+
+      const index = fileList.indexOf(file);
+      const newFileList = fileList.slice();
+      newFileList.splice(index, 1);
+      setFileList(newFileList);
+    },
+    beforeUpload: (file) => {
+      setFileList([...fileList, file]);
+      return false;
+    },
+  };
 
   const handleSubmit = async value => {
     if (edit[0]) {
       await editProcessos(edit[1], value)
+
+      await uploadProcessos(edit[1], fileList)
+
+      await uploadProcessosRemove(edit[1], fileListRemove)
 
       setEdit([false, null])
 
@@ -92,21 +119,23 @@ function Processos() {
   }
 
   const onEdit = async ( id ) => {
-    setStatus(false)
-    setEdit([true, id])
     const processo = await getProcessosById(id);
 
     setProcesso(processo)
+    setProcessoFiles(processo.files)
+
+    setStatus(false)
+    setEdit([true, id])
   }
 
   const onCreate = async ( ) => {
+    form.resetFields();
+    setProcesso([])
+    setProcessoFiles([])
+
     setStatus(false)
     setEdit([false, null])
   }
-
-  const onReset = () => {
-    form.resetFields();
-  };
 
   useEffect(() => {
     (async () => {
@@ -136,139 +165,129 @@ function Processos() {
   }, [reload])
 
   return (
-      <div>
-        <>
-          <div className="container-fluid" style={{ paddingTop: "100px" }}>
-            <div className="row">
-              <main role="main" className="col-12 ml-sm-auto pt-3 px-4">
-                {status && <>
-                  <div className="pt-4 col-12">
-                    <button className="btn btn-primary" type="button" onClick={() => onCreate()}>Cadastrar</button>
-                  </div>
-                  <div className="col-12">
-                    <table className="table table-bordered">
-                      <thead>
-                        <tr>
-                          <th scope="col">Número</th>
-                          <th scope="col">Tipo</th>
-                          <th scope="col">Comanda</th>
-                          <th scope="col"></th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {processos.map((item) => {
-                          return (
-                              <tr key={item.id}>
-                                <td>{item.numero}</td>
-                                <td>{item.tipo}</td>
-                                <td>{item.comanda}</td>
-                                <td>
-                                  <button type="button" onClick={() => onEdit(item.id)} className="btn btn-primary">Editar<i className="fas fa-edit"></i></button>
-                                  <button type="button" onClick={() => onRemove(item.id)} className="btn btn-danger">Remover<i className="far fa-trash-alt"></i></button>
-                                </td>
-                              </tr>
-                          )
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                </>}
+    <Content
+      style={{
+        padding: '0 20rem',
+      }}
+    >
+      {status && <>
+        <Button type="primary" onClick={() => onCreate()}>Cadastrar</Button>
+        <Divider />
+        <Table dataSource={processos}>
+          <Column title="Número" dataIndex="numero" key="id" />
+          <Column title="Tipo" dataIndex="tipo" key="id" />
+          <Column title="Comanda" dataIndex="comanda" key="id" />
+          <Column
+            title="Ações"
+            key="action"
+            render={(_, record) => (
+              <Space size="middle">
+                <Button type="primary" onClick={() => onEdit(record.id)}>Editar</Button>
+                <Button type="primary" onClick={() => onRemove(record.id)} danger>Remover</Button>
+              </Space>
+            )}
+          />
+        </Table>
+      </>}
 
-                {!status && <>
-                  <Form
-                      form={form}
-                      layout="vertical"
-                      onFinish={handleSubmit}
-                  >
-                    <Title level={3}>Dados Gerais</Title>
+      {!status && <>
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleSubmit}
+        >
+          <Title level={3}>Dados Gerais</Title>
 
-                    <Divider />
+          <Divider />
 
-                    <Row gutter={[16, 16]}>
-                      <Col span={4}>
-                        <Form.Item
-                            name="numero"
-                            label="Número"
-                            rules={[
-                              {
-                                required: true,
-                              },
-                            ]}
-                            initialValue={processo.numero}
-                        >
-                          <InputNumber style={{ width: '100%' }} />
-                        </Form.Item>
-                      </Col>
-                      <Col span={4}>
-                        <Form.Item
-                            name="comanda"
-                            label="Comanda"
-                            rules={[
-                              {
-                                required: true,
-                              },
-                            ]}
-                            initialValue={processo.comanda}
-                        >
-                          <Input />
-                        </Form.Item>
-                      </Col>
-                      <Col span={4}>
-                        <Form.Item
-                            name="tipo"
-                            label="Tipo do Processo"
-                            rules={[
-                              {
-                                required: true,
-                              },
-                            ]}
-                            initialValue={processo.tipo}
-                        >
-                          <Select
-                              allowClear
-                              style={{
-                                width: '100%',
-                              }}
-                              options={tipos}
-                              placeholder="Selecione o Tipo"
-                          />
-                        </Form.Item>
-                      </Col>
-                      <Col span={12}>
-                        <Form.Item
-                            name="clientes_vinculados"
-                            label="Cliente do Processo"
-                            rules={[
-                              {
-                                required: true,
-                              },
-                            ]}
-                        >
-                          <Select
-                              mode="multiple"
-                              allowClear
-                              style={{
-                                width: '100%',
-                              }}
-                              options={client}
-                              placeholder="Selecione o cliente"
-                          />
-                        </Form.Item>
-                      </Col>
-                    </Row>
+          <Row gutter={[16, 16]}>
+            <Col span={4}>
+              <Form.Item
+                name="numero"
+                label="Número"
+                rules={[
+                  {
+                    required: true,
+                  },
+                ]}
+                initialValue={processo.numero}
+              >
+                <InputNumber style={{ width: '100%' }} />
+              </Form.Item>
+            </Col>
+            <Col span={4}>
+              <Form.Item
+                name="comanda"
+                label="Comanda"
+                rules={[
+                  {
+                    required: true,
+                  },
+                ]}
+                initialValue={processo.comanda}
+              >
+                <Input />
+              </Form.Item>
+            </Col>
+            <Col span={4}>
+              <Form.Item
+                name="tipo"
+                label="Tipo do Processo"
+                rules={[
+                  {
+                    required: true,
+                  },
+                ]}
+                initialValue={processo.tipo}
+              >
+                <Select
+                  allowClear
+                  style={{
+                    width: '100%',
+                  }}
+                  options={tipos}
+                  placeholder="Selecione o Tipo"
+                />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="clientes_vinculados"
+                label="Cliente do Processo"
+                rules={[
+                  {
+                    required: true,
+                  },
+                ]}
+                initialValue={processo.cliente}
+              >
+                <Select
+                  mode="multiple"
+                  allowClear
+                  style={{
+                    width: '100%',
+                  }}
+                  options={client}
+                  placeholder="Selecione o cliente"
+                />
+              </Form.Item>
+            </Col>
+            <Col span={24}>
+              <Upload defaultFileList={[...processoFiles]} {...props}>
+                <Button icon={<UploadOutlined />}>Arquivos</Button>
+              </Upload>
+            </Col>
 
-                    <Row gutter={[16, 16]}>
-                      <Button type="primary" htmlType="submit">Salvar</Button>
-                      <Button htmlType="button" onClick={onReset}>Limpar</Button>
-                      <Button type="primary" danger onClick={() => setStatus(true)}>Cancelar</Button>
-                    </Row>
-                  </Form>
-                </>}
-              </main>
-            </div>
-          </div>
-        </>
-      </div>
+            <Col span={24}>
+              <Space size="middle">
+                <Button type="primary" htmlType="submit">Salvar</Button>
+                <Button type="primary" danger onClick={() => setStatus(true)}>Cancelar</Button>
+              </Space>
+            </Col>
+          </Row>
+        </Form>
+      </>}
+    </Content>
   )
 }
 
