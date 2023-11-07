@@ -4,7 +4,6 @@ import {Col, Button, Form, Input, Typography, Row, Divider, DatePicker, Space, T
 
 import swal from "sweetalert2";
 import {createAdvogado, deleteAdvogado, editAdvogado, getAdvogado, getAdvogadoById} from "../router/advogado";
-import {getClientById, getClientVinculados} from "../router/clients";
 
 const { Title } = Typography;
 const { Content } = Layout;

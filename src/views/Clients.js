@@ -191,9 +191,12 @@ function Clients() {
           <Column
               title="Data Nascimento"
               key="data_nasc"
-              render={(_, record) => (
+              render={(_, record) => {
+                console.log(record)
+                return (
                   new Date(record.data_nasc).toISOString().split('T')[0].split('-').reverse().join('/')
-              )}
+                )
+              }}
           />
           <Column title="Contato" dataIndex="contato" key="contato" />
           <Column

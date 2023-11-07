@@ -1,6 +1,21 @@
 import {useState, useEffect, useContext} from 'react'
-import { UploadOutlined } from '@ant-design/icons';
-import {Select, Col, Button, Form, Input, Typography, Row, InputNumber, Divider, Upload, Space, Table, Layout} from 'antd';
+import {UndoOutlined, UploadOutlined} from '@ant-design/icons';
+import {
+  Select,
+  Col,
+  Button,
+  Form,
+  Input,
+  Typography,
+  Row,
+  InputNumber,
+  Divider,
+  Upload,
+  Space,
+  Table,
+  Layout,
+  Tooltip
+} from 'antd';
 
 import swal from "sweetalert2";
 import {
@@ -13,6 +28,10 @@ import {
 import {getClientVinculados} from "../router/clients";
 import AuthContext from "../context/AuthContext";
 import {useHistory} from "react-router-dom";
+// import {getDiarioOficial} from "../router/diario";
+
+import pdfMake from 'pdfmake/build/pdfmake'
+import pdfFonts from 'pdfmake/build/vfs_fonts'
 
 const { Title } = Typography;
 const { Content } = Layout;
@@ -31,6 +50,9 @@ function Processos() {
   const [processos, setProcessos] = useState([])
   const [processo, setProcesso] = useState([])
   const [processoFiles, setProcessoFiles] = useState([])
+  
+  const [diario, setDiario] = useState([])
+  
   const [client, setClient] = useState([])
   const [tipos, setTipos] = useState([])
 
@@ -120,9 +142,18 @@ function Processos() {
 
   const onEdit = async ( id ) => {
     const processo = await getProcessosById(id);
-
+    
     setProcesso(processo)
-    setProcessoFiles(processo.files)
+    
+    const files = []
+    
+    for (const item of processo.files) {
+      item.key = item.id
+      item.uid = item.id
+      files.push(item)
+    }
+    
+    setProcessoFiles(files)
 
     setStatus(false)
     setEdit([true, id])
@@ -135,6 +166,74 @@ function Processos() {
 
     setStatus(false)
     setEdit([false, null])
+  }
+  
+  const processoPdf = () => {
+    // const [diario, setDiario] = useState([])
+    // const getDiario = getDiarioOficial();
+    // console.log(getDiario)
+    // setDiario(getDiario)
+    // console.log(processo, diario)
+    pdfMake.vfs = pdfFonts.pdfMake.vfs;
+    
+    const reportTitle = [
+      {
+        text: 'Referencias',
+        fontSize: 15,
+        bold: true,
+        margin: [15, 20, 0, 45] // left, top, right, bottom
+      }
+    ];
+    
+    // const dados = clientes.map((cliente) => {
+    //   return [
+    //     {text: cliente.id, fontSize: 9, margin: [0, 2, 0, 2]},
+    //     {text: cliente.nome, fontSize: 9, margin: [0, 2, 0, 2]},
+    //     {text: cliente.email, fontSize: 9, margin: [0, 2, 0, 2]},
+    //     {text: cliente.fone, fontSize: 9, margin: [0, 2, 0, 2]}
+    //   ]
+    // });
+    
+    const details = [
+      {
+        table:{
+          headerRows: 1,
+          widths: ['*', '*', '*', '*'],
+          body: [
+            [
+              {text: 'Código', style: 'tableHeader', fontSize: 10},
+              {text: 'Nome', style: 'tableHeader', fontSize: 10},
+              {text: 'E-mail', style: 'tableHeader', fontSize: 10},
+              {text: 'Telefone', style: 'tableHeader', fontSize: 10}
+            ],
+            // ...dados
+          ]
+        },
+        layout: 'lightHorizontalLines' // headerLineOnly
+      }
+    ];
+    
+    function Rodape(currentPage, pageCount){
+      return [
+        {
+          text: currentPage + ' / ' + pageCount,
+          alignment: 'right',
+          fontSize: 9,
+          margin: [0, 10, 20, 0] // left, top, right, bottom
+        }
+      ]
+    }
+    
+    const docDefinitios = {
+      pageSize: 'A4',
+      pageMargins: [15, 50, 15, 40],
+      
+      header: [reportTitle],
+      content: [details],
+      footer: Rodape
+    }
+    
+    pdfMake.createPdf(docDefinitios).download();
   }
 
   useEffect(() => {
@@ -149,21 +248,29 @@ function Processos() {
         getTipos.forEach((item) => {
           tipos_array.push({value: item.id, label: item.nome_completo})
         })
-
+        
         getClientesVinculados.forEach((item) => {
           clientes_array.push({value: item.id, label: item.nome})
         })
 
         setTipos(tipos_array)
         setClient(clientes_array)
-        setProcessos(await getProcessosVinculados(user.id))
+        
+        const processos = []
+        
+        for (const item of await getProcessosVinculados(user.id)) {
+          item.key = item.id
+          processos.push(item)
+        }
+        
+        setProcessos(processos)
       } catch (error) {
         localStorage.removeItem("authTokens")
         history.push('/');
       }
     })()
   }, [reload])
-
+  
   return (
     <Content
       style={{
@@ -171,12 +278,14 @@ function Processos() {
       }}
     >
       {status && <>
-        <Button type="primary" onClick={() => onCreate()}>Cadastrar</Button>
+        <Space size="middle">
+          <Button type="primary" onClick={() => onCreate()}>Cadastrar</Button>
+        </Space>
         <Divider />
         <Table dataSource={processos}>
-          <Column title="Número" dataIndex="numero" key="id" />
-          <Column title="Tipo" dataIndex="tipo" key="id" />
-          <Column title="Comanda" dataIndex="comanda" key="id" />
+          <Column title="Número" dataIndex="numero" key="numero" />
+          <Column title="Tipo" dataIndex="tipo" key="tipo" />
+          <Column title="Comanda" dataIndex="comanda" key="comanda" />
           <Column
             title="Ações"
             key="action"
@@ -196,7 +305,12 @@ function Processos() {
           layout="vertical"
           onFinish={handleSubmit}
         >
-          <Title level={3}>Dados Gerais</Title>
+          <Space align="start" size="middle">
+            <Title level={3}>Dados Gerais</Title>
+            <Tooltip title="Sincronizar com Diario Oficial">
+              <Button type="primary" onClick={() => onCreate()} icon={<UndoOutlined />}>Sincronizar</Button>
+            </Tooltip>
+          </Space>
 
           <Divider />
 
@@ -286,6 +400,7 @@ function Processos() {
               <Space size="middle">
                 <Button type="primary" htmlType="submit">Salvar</Button>
                 <Button type="primary" danger onClick={() => setStatus(true)}>Cancelar</Button>
+                <Button block onClick={() => processoPdf()}>Relátorio</Button>
               </Space>
             </Col>
           </Row>

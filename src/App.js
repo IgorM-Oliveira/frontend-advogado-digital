@@ -1,7 +1,6 @@
 import React from 'react'
 
 import {BrowserRouter as Router, Route, Switch} from "react-router-dom"
-import PrivateRoute from "./utils/PrivateRoute"
 import { AuthProvider } from './context/AuthContext'
 
 import Homepage from './views/Homepage'
@@ -26,10 +25,10 @@ function App() {
         </div>
         <div style={{ minHeight: "90vh" }}>
           <Switch>
-            <PrivateRoute component={Clients} path="/clients" exact />
-            <PrivateRoute component={Advogado} path="/advogados" exact />
-            <PrivateRoute component={Processos} path="/processos" exact />
-            <PrivateRoute component={Profile} path="/profile" exact />
+            <Route component={Clients} path="/clients" exact />
+            <Route component={Advogado} path="/advogados" exact />
+            <Route component={Processos} path="/processos" exact />
+            <Route component={Profile} path="/profile" exact />
 
             <Route component={Loginpage} path="/login" />
             <Route component={ClienteLoginpage} path="/login_client" />

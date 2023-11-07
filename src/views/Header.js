@@ -18,7 +18,6 @@ export default function Header() {
             {(user?.function === 'advogado' || user?.adm === true) &&
               <>
                 <Menu.Item icon={<FileOutlined />} key="processos"><a href="/processos" style={{ textDecoration: "none" }}>Processos</a></Menu.Item>
-                <Menu.Item icon={<FileOutlined />} key="relatorios"><a href="/relatorios" style={{ textDecoration: "none" }}>Relatórios</a></Menu.Item>
               </>
             }
           </Menu>
