@@ -8,13 +8,12 @@ import {
   Input,
   Typography,
   Row,
-  InputNumber,
   Divider,
   Upload,
   Space,
   Table,
   Layout,
-  Tooltip
+  Tooltip, DatePicker
 } from 'antd';
 
 import swal from "sweetalert2";
@@ -23,15 +22,16 @@ import {
   deleteProcessos,
   editProcessos,
   getProcessosById, getProcessosVinculados,
-  getTiposProcessos, uploadProcessos, uploadProcessosRemove
+  getTiposProcessos, uploadProcessos, uploadProcessosRemove,
+  getDiarioOficial, uploadProcessosInsert
 } from "../router/processos";
 import {getClientVinculados} from "../router/clients";
 import AuthContext from "../context/AuthContext";
 import {useHistory} from "react-router-dom";
-// import {getDiarioOficial} from "../router/diario";
 
 import pdfMake from 'pdfmake/build/pdfmake'
 import pdfFonts from 'pdfmake/build/vfs_fonts'
+import dayjs from "dayjs";
 
 const { Title } = Typography;
 const { Content } = Layout;
@@ -43,15 +43,17 @@ function Processos() {
 
   const [form] = Form.useForm();
 
+  const [loading, setLoading] = useState(false)
+
   const [reload, setReload] = useState()
   const [status, setStatus] = useState(true)
   const [edit, setEdit] = useState([false, null])
+  
+  const [diarioOficial, setDiarioOficial] = useState([])
 
   const [processos, setProcessos] = useState([])
   const [processo, setProcesso] = useState([])
   const [processoFiles, setProcessoFiles] = useState([])
-  
-  const [diario, setDiario] = useState([])
   
   const [client, setClient] = useState([])
   const [tipos, setTipos] = useState([])
@@ -95,6 +97,7 @@ function Processos() {
         showConfirmButton: false,
       })
     } else {
+      value.advogado = user.id
       await createProcessos(value)
       setEdit([false, null])
       setStatus(true)
@@ -150,6 +153,8 @@ function Processos() {
     for (const item of processo.files) {
       item.key = item.id
       item.uid = item.id
+      item.thumbUrl = item.thumbUrl+'.pdf'
+
       files.push(item)
     }
     
@@ -168,12 +173,46 @@ function Processos() {
     setEdit([false, null])
   }
   
-  const processoPdf = () => {
-    // const [diario, setDiario] = useState([])
-    // const getDiario = getDiarioOficial();
-    // console.log(getDiario)
-    // setDiario(getDiario)
-    // console.log(processo, diario)
+  const sincronizar = async () => {
+    setLoading(true)
+    const diario = []
+    const inicio = processo.inicio.split("T")[0].split('-').reverse().join('/')
+    const data = new Date();
+    data.setDate(data.getDate() - 1);
+    
+    const fim = processo.fim
+      ? processo.fim.split("T")[0].split('-').reverse().join('/')
+      : data.toISOString().split('T')[0].split('-').reverse().join('/')
+    
+    const form = {
+      "Filter.Numero": '',
+      "Filter.DataInicial": inicio,
+      "Filter.DataFinal": fim,
+      "Filter.Texto": processo.numero,
+      "Filter.TipoBuscaEnum": 1,
+    }
+    const getDiario = await getDiarioOficial(form);
+    
+    for (const item of getDiario.dataElastic) {
+      diarioOficial.push(item)
+      diario.push({
+        'id_processo': processo.id,
+        'caminho_pdf': 'https://www.spdo.ms.gov.br/diariodoe/Index/Download/'+item.Source.NomeArquivo.replace('.pdf', ''),
+        'filename': item.Source.NomeArquivo.replace('.pdf', '')
+      })
+    }
+    
+    await uploadProcessosInsert(diario)
+    setLoading(false)
+    /*setEdit([false, null])
+    setStatus(true)
+    window.location.reload()*/
+  }
+  
+  const processoPdf = async () => {
+    const list = []
+    await sincronizar()
+    
     pdfMake.vfs = pdfFonts.pdfMake.vfs;
     
     const reportTitle = [
@@ -185,33 +224,45 @@ function Processos() {
       }
     ];
     
-    // const dados = clientes.map((cliente) => {
-    //   return [
-    //     {text: cliente.id, fontSize: 9, margin: [0, 2, 0, 2]},
-    //     {text: cliente.nome, fontSize: 9, margin: [0, 2, 0, 2]},
-    //     {text: cliente.email, fontSize: 9, margin: [0, 2, 0, 2]},
-    //     {text: cliente.fone, fontSize: 9, margin: [0, 2, 0, 2]}
-    //   ]
-    // });
+    console.log(list)
     
-    const details = [
-      {
-        table:{
-          headerRows: 1,
-          widths: ['*', '*', '*', '*'],
-          body: [
-            [
-              {text: 'Código', style: 'tableHeader', fontSize: 10},
-              {text: 'Nome', style: 'tableHeader', fontSize: 10},
-              {text: 'E-mail', style: 'tableHeader', fontSize: 10},
-              {text: 'Telefone', style: 'tableHeader', fontSize: 10}
-            ],
-            // ...dados
-          ]
+    var dd = {
+      content: [
+        {
+          text: 'Subheader 1 - using subheader style',
+          style: 'subheader',
+          fontSize: 15,
+          bold: true
         },
-        layout: 'lightHorizontalLines' // headerLineOnly
-      }
-    ];
+        'Lorem ipsum dolor sit amet, consectetur adipisicing elit. Confectum ponit legam, perferendis nomine miserum, animi. Moveat nesciunt triari naturam posset, eveniunt specie deorsus efficiat sermone instituendarum fuisse veniat, eademque mutat debeo. Delectet plerique protervi diogenem dixerit logikh levius probabo adipiscuntur afficitur, factis magistra inprobitatem aliquo andriam obiecta, religionis, imitarentur studiis quam, clamat intereant vulgo admonitionem operis iudex stabilitas vacillare scriptum nixam, reperiri inveniri maestitiam istius eaque dissentias idcirco gravis, refert suscipiet recte sapiens oportet ipsam terentianus, perpauca sedatio aliena video.',
+        'First paragraph',
+        'Another paragraph, this time a little bit longer to make sure, this line will be divided into at least two lines'
+      ]
+    }
+    
+    const dados = diarioOficial.map((item) => {
+      return [
+        {
+          text: item.Source.NomeArquivo,
+          style: 'subheader',
+          fontSize: 12,
+          bold: true,
+          margin: [10, 5, 0, 5]
+        },
+        {
+          text: item.Source.Texto,
+          alignment: 'justify',
+          fontSize: 10,
+          margin: [0, 10, 10, 0] // left, top, right, bottom
+        }
+      ]
+    });
+    
+    const details = {
+      content: [
+        ...dados
+      ]
+    };
     
     function Rodape(currentPage, pageCount){
       return [
@@ -229,11 +280,17 @@ function Processos() {
       pageMargins: [15, 50, 15, 40],
       
       header: [reportTitle],
-      content: [details],
+      content: [details.content],
       footer: Rodape
     }
     
-    pdfMake.createPdf(docDefinitios).download();
+    setDiarioOficial([])
+
+    const pdf = pdfMake.createPdf(docDefinitios);
+    pdf.getBlob((blod) => {
+      const url = URL.createObjectURL(blod)
+      window.open(url, '_blank')
+    })
   }
 
   useEffect(() => {
@@ -308,7 +365,7 @@ function Processos() {
           <Space align="start" size="middle">
             <Title level={3}>Dados Gerais</Title>
             <Tooltip title="Sincronizar com Diario Oficial">
-              <Button type="primary" onClick={() => onCreate()} icon={<UndoOutlined />}>Sincronizar</Button>
+              <Button type="primary" onClick={async () => await sincronizar()} icon={<UndoOutlined />} loading={loading}>Sincronizar</Button>
             </Tooltip>
           </Space>
 
@@ -327,7 +384,7 @@ function Processos() {
                 ]}
                 initialValue={processo.numero}
               >
-                <InputNumber style={{ width: '100%' }} />
+                <Input />
               </Form.Item>
             </Col>
             <Col span={4}>
@@ -388,6 +445,39 @@ function Processos() {
                   options={client}
                   placeholder="Selecione o cliente"
                 />
+              </Form.Item>
+            </Col>
+            <Col span={16}>
+              <Form.Item
+                name="resumo"
+                label="Resumo"
+                initialValue={processo.resumo}
+              >
+                <Input />
+              </Form.Item>
+            </Col>
+            <Col span={4}>
+              <Form.Item
+                name="inicio"
+                label="Data de Inicio"
+                initialValue={processo.inicio ? dayjs(processo.inicio, "YYYY-MM-DD") : null}
+                rules={[
+                  {
+                    required: true,
+                    message: 'Data Inicial',
+                  },
+                ]}
+              >
+                <DatePicker placeholder="Início" format="DD/MM/YYYY" style={{ width: '100%' }} />
+              </Form.Item>
+            </Col>
+            <Col span={4}>
+              <Form.Item
+                name="fim"
+                label="Data de Fim"
+                initialValue={processo.fim ? dayjs(processo.fim, "YYYY-MM-DD") : null}
+              >
+                <DatePicker placeholder="Fim"  format="DD/MM/YYYY" style={{ width: '100%' }} />
               </Form.Item>
             </Col>
             <Col span={24}>

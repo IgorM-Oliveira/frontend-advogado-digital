@@ -34,6 +34,9 @@ export const deleteProcessos = async (id) =>
 export const uploadProcessosRemove = async (id, data) =>
     await api.post(`/processos/upload/remove/${id}`, data);
 
+export const uploadProcessosInsert = async (data) =>
+    await api.post(`/processos/upload/insert`, data);
+
 export const uploadProcessos = async (id, data) => {
     let result = null
     for (const file of data) {
@@ -53,4 +56,9 @@ export const uploadProcessos = async (id, data) => {
         }
     }
     return result
+};
+
+export const getDiarioOficial = async (form) => {
+    const { data } = await api.post('/processos/getDiarioOficial', form)
+    return data
 };
