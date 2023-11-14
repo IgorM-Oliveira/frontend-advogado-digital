@@ -145,9 +145,6 @@ function Processos() {
 
   const onEdit = async ( id ) => {
     const processo = await getProcessosById(id);
-    
-    setProcesso(processo)
-    
     const files = []
     
     for (const item of processo.files) {
@@ -158,6 +155,7 @@ function Processos() {
       files.push(item)
     }
     
+    setProcesso(processo)
     setProcessoFiles(files)
 
     setStatus(false)
@@ -204,9 +202,8 @@ function Processos() {
     
     await uploadProcessosInsert(diario)
     setLoading(false)
-    /*setEdit([false, null])
+    setEdit([false, null])
     setStatus(true)
-    window.location.reload()*/
   }
   
   const processoPdf = async () => {
@@ -224,23 +221,8 @@ function Processos() {
       }
     ];
     
-    console.log(list)
-    
-    var dd = {
-      content: [
-        {
-          text: 'Subheader 1 - using subheader style',
-          style: 'subheader',
-          fontSize: 15,
-          bold: true
-        },
-        'Lorem ipsum dolor sit amet, consectetur adipisicing elit. Confectum ponit legam, perferendis nomine miserum, animi. Moveat nesciunt triari naturam posset, eveniunt specie deorsus efficiat sermone instituendarum fuisse veniat, eademque mutat debeo. Delectet plerique protervi diogenem dixerit logikh levius probabo adipiscuntur afficitur, factis magistra inprobitatem aliquo andriam obiecta, religionis, imitarentur studiis quam, clamat intereant vulgo admonitionem operis iudex stabilitas vacillare scriptum nixam, reperiri inveniri maestitiam istius eaque dissentias idcirco gravis, refert suscipiet recte sapiens oportet ipsam terentianus, perpauca sedatio aliena video.',
-        'First paragraph',
-        'Another paragraph, this time a little bit longer to make sure, this line will be divided into at least two lines'
-      ]
-    }
-    
     const dados = diarioOficial.map((item) => {
+      console.log(item.Source)
       return [
         {
           text: item.Source.NomeArquivo,
@@ -252,8 +234,22 @@ function Processos() {
         {
           text: item.Source.Texto,
           alignment: 'justify',
-          fontSize: 10,
-          margin: [0, 10, 10, 0] // left, top, right, bottom
+          fontSize: 9,
+          margin: [50, 10, 10, 0] // left, top, right, bottom
+        },
+        {
+          text: 'Link: https://www.spdo.ms.gov.br/diariodoe/Index/Download/'+item.Source.NomeArquivo.replace('.pdf', ''),
+          link: 'https://www.spdo.ms.gov.br/diariodoe/Index/Download/'+item.Source.NomeArquivo.replace('.pdf', ''),
+          fontSize: 9,
+          bold: true,
+            margin: [10, 5, 0, 0]
+        },
+        {
+          text: 'Página: '+item.Source.Pagina,
+          fontSize: 9,
+          bold: true,
+          margin: [10, 5, 0, 5],
+          pageBreak: 'after'
         }
       ]
     });
@@ -489,7 +485,7 @@ function Processos() {
             <Col span={24}>
               <Space size="middle">
                 <Button type="primary" htmlType="submit">Salvar</Button>
-                <Button type="primary" danger onClick={() => setStatus(true)}>Cancelar</Button>
+                <Button type="primary" danger onClick={() => window.location.reload()}>Cancelar</Button>
                 <Button block onClick={() => processoPdf()}>Relátorio</Button>
               </Space>
             </Col>
