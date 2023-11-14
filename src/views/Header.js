@@ -15,7 +15,7 @@ export default function Header() {
         <Col flex="1 1 200px">
           <Menu mode="horizontal">
             <Menu.Item icon={<HomeOutlined />} key="home"><a href="/" style={{ textDecoration: "none" }}>Home</a></Menu.Item>
-            {(user?.function === 'advogado' || user?.adm === true) &&
+            {token !== null &&
               <>
                 <Menu.Item icon={<FileOutlined />} key="processos"><a href="/processos" style={{ textDecoration: "none" }}>Processos</a></Menu.Item>
               </>

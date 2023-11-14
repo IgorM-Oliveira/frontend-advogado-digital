@@ -23,7 +23,7 @@ import {
   editProcessos,
   getProcessosById, getProcessosVinculados,
   getTiposProcessos, uploadProcessos, uploadProcessosRemove,
-  getDiarioOficial, uploadProcessosInsert
+  getDiarioOficial, uploadProcessosInsert, getProcessosClienteVinculados
 } from "../router/processos";
 import {getClientVinculados} from "../router/clients";
 import AuthContext from "../context/AuthContext";
@@ -292,34 +292,58 @@ function Processos() {
   useEffect(() => {
     (async () => {
       try{
-        const getTipos = await getTiposProcessos()
-        const getClientesVinculados = await getClientVinculados(user.id)
-
-        const tipos_array= []
-        const clientes_array= []
-
-        getTipos.forEach((item) => {
-          tipos_array.push({value: item.id, label: item.nome_completo})
-        })
-        
-        getClientesVinculados.forEach((item) => {
-          clientes_array.push({value: item.id, label: item.nome})
-        })
-
-        setTipos(tipos_array)
-        setClient(clientes_array)
-        
-        const processos = []
-        
-        for (const item of await getProcessosVinculados(user.id)) {
-          item.key = item.id
-          processos.push(item)
+        console.log(user)
+        if (user.function === 'advogado') {
+          const getTipos = await getTiposProcessos()
+          const getClientesVinculados = await getClientVinculados(user.id)
+          
+          const tipos_array= []
+          const clientes_array= []
+          
+          getTipos.forEach((item) => {
+            tipos_array.push({value: item.id, label: item.nome_completo})
+          })
+          
+          getClientesVinculados.forEach((item) => {
+            clientes_array.push({value: item.id, label: item.nome})
+          })
+          
+          setTipos(tipos_array)
+          setClient(clientes_array)
+          
+          const processos = []
+          
+          for (const item of await getProcessosVinculados(user.id)) {
+            item.key = item.id
+            processos.push(item)
+          }
+          
+          setProcessos(processos)
+        } else {
+          const getTipos = await getTiposProcessos()
+          
+          const tipos_array= []
+          const clientes_array= []
+          
+          getTipos.forEach((item) => {
+            tipos_array.push({value: item.id, label: item.nome_completo})
+          })
+          
+          setTipos(tipos_array)
+          setClient(clientes_array)
+          
+          const processos = []
+          
+          for (const item of await getProcessosClienteVinculados(user.id)) {
+            item.key = item.id
+            processos.push(item)
+          }
+          
+          setProcessos(processos)
         }
-        
-        setProcessos(processos)
       } catch (error) {
-        localStorage.removeItem("authTokens")
-        history.push('/');
+        /*localStorage.removeItem("authTokens")
+        history.push('/');*/
       }
     })()
   }, [reload])
@@ -420,30 +444,32 @@ function Processos() {
                 />
               </Form.Item>
             </Col>
+            {(user.function === 'advogado') && <>
+              <Col span={12}>
+                <Form.Item
+                  name="clientes_vinculados"
+                  label="Cliente do Processo"
+                  rules={[
+                    {
+                      required: true,
+                      message: 'Cliente requerido',
+                    },
+                  ]}
+                  initialValue={processo.cliente}
+                >
+                  <Select
+                    mode="multiple"
+                    allowClear
+                    style={{
+                      width: '100%',
+                    }}
+                    options={client}
+                    placeholder="Selecione o cliente"
+                  />
+                </Form.Item>
+              </Col>
+            </>}
             <Col span={12}>
-              <Form.Item
-                name="clientes_vinculados"
-                label="Cliente do Processo"
-                rules={[
-                  {
-                    required: true,
-                    message: 'Cliente requerido',
-                  },
-                ]}
-                initialValue={processo.cliente}
-              >
-                <Select
-                  mode="multiple"
-                  allowClear
-                  style={{
-                    width: '100%',
-                  }}
-                  options={client}
-                  placeholder="Selecione o cliente"
-                />
-              </Form.Item>
-            </Col>
-            <Col span={16}>
               <Form.Item
                 name="resumo"
                 label="Resumo"
@@ -452,7 +478,7 @@ function Processos() {
                 <Input />
               </Form.Item>
             </Col>
-            <Col span={4}>
+            <Col span={6}>
               <Form.Item
                 name="inicio"
                 label="Data de Inicio"
@@ -467,7 +493,7 @@ function Processos() {
                 <DatePicker placeholder="Início" format="DD/MM/YYYY" style={{ width: '100%' }} />
               </Form.Item>
             </Col>
-            <Col span={4}>
+            <Col span={6}>
               <Form.Item
                 name="fim"
                 label="Data de Fim"
@@ -484,8 +510,10 @@ function Processos() {
 
             <Col span={24}>
               <Space size="middle">
-                <Button type="primary" htmlType="submit">Salvar</Button>
-                <Button type="primary" danger onClick={() => window.location.reload()}>Cancelar</Button>
+                {(user.function === 'advogado') && <>
+                  <Button type="primary" htmlType="submit">Salvar</Button>
+                  <Button type="primary" danger onClick={() => window.location.reload()}>Cancelar</Button>
+                </>}
                 <Button block onClick={() => processoPdf()}>Relátorio</Button>
               </Space>
             </Col>

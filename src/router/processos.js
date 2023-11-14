@@ -12,6 +12,11 @@ export const getProcessosVinculados = async (id) => {
     return data;
 };
 
+export const getProcessosClienteVinculados = async (id) => {
+    const { data } = await api.get(`/processos/vinculados/cliente/${id}`);
+    return data;
+};
+
 export const getTiposProcessos = async () => {
     const { data } = await api.get(`/processos/tipos`);
     return data;
