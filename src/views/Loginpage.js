@@ -1,107 +1,91 @@
-import React, { useContext } from 'react'
-import { Link } from 'react-router-dom'
+import { UserOutlined, LockOutlined } from '@ant-design/icons';
+import React, {useContext} from 'react'
+
 import AuthContext from '../context/AuthContext'
 
-function Loginpage() {
+import {Card, Form, Input, Button, Typography, Flex} from 'antd';
+const { Paragraph, Title } = Typography;
+
+function LoginAdc() {
   const {loginUser} = useContext(AuthContext)
-  const handleSubmit = e => {
-    e.preventDefault()
-    const user = e.target.user.value
-    const password = e.target.password.value
+
+  const handleSubmit = (values) => {
+    const user = values.username
+    const password = values.password
 
     user.length > 0 && loginUser(user, password)
   }
 
   return (
-      <div>
-        <>
-          <section className="vh-100" style={{ backgroundColor: "#646262" }}>
-            <div className="container py-5 h-100">
-              <div className="row d-flex justify-content-center align-items-center h-100">
-                <div className="col col-xl-6">
-                  <div className="card" style={{ borderRadius: "1rem" }}>
-                    <div className="g-0">
-                      <div className="d-flex align-items-center">
-                        <div className="card-body p-4 p-lg-5 text-black">
-                          <form onSubmit={handleSubmit}>
-                            <div className="d-flex align-items-center mb-3 pb-1">
-                              <i
-                                  className="fas fa-cubes fa-2x me-3"
-                                  style={{ color: "#ff6219" }}
-                              />
-                              <div className="d-flex align-items-center mb-3 pb-1">
-                                <i
-                                    className="fas fa-cubes fa-2x me-3"
-                                    style={{ color: "#ff6219" }}
-                                />
-                                <span className="h2 fw-bold mb-0">Bem vindo 👋</span>
-                              </div>
-                            </div>
-                            <h5
-                                className="fw-normal mb-3 pb-3"
-                                style={{ letterSpacing: 1 }}
-                            >
-                              Faça login em sua conta
-                            </h5>
-                            <div className="form-outline mb-4">
-                              <input
-                                  type="text"
-                                  id="form_user"
-                                  className="form-control form-control-lg"
-                                  name='user'
-                              />
-                              <label className="form-label" htmlFor="form_user">
-                                Usuário
-                              </label>
-                            </div>
-                            <div className="form-outline mb-4">
-                              <input
-                                  type="password"
-                                  id="form_password"
-                                  className="form-control form-control-lg"
-                                  name='password'
-                              />
-                              <label className="form-label" htmlFor="form_password">
-                                Senha
-                              </label>
-                            </div>
-                            <div className="pt-1 mb-4">
-                              <button
-                                  className="btn btn-dark btn-lg btn-block"
-                                  type="submit"
-                              >
-                                Login
-                              </button>
-                            </div>
-                            {/*<a className="small text-muted" href="#!">
-                              Forgot password?
-                            </a>*/}
-                            <p className="mb-5 pb-lg-2" style={{ color: "#393f81" }}>
-                              <Link to="/login_client" style={{ color: "#393f81" }}>
-                                Login do Cliente
-                              </Link>
-                            </p>
-                          </form>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <footer className="bg-light text-center text-lg-start">
-            <div
-                className="text-center p-3"
-                style={{ backgroundColor: "rgba(0, 0, 0, 0.2)" }}
+    <>
+      <Form
+        name="basic"
+        initialValues={{
+          remember: true,
+        }}
+        onFinish={handleSubmit}
+        autoComplete="off"
+        layout="vertical"
+        style={{
+            height: '100vh',
+          }}
+        >
+          <Flex
+            style={{
+              width: '100%',
+              height: '80vh',
+              borderRadius: 6,
+            }}
+            justify='center'
+            align='center'
+          >
+            <Card
+              size="small"
+              actions={[
+                <Button type="link" htmlType="submit">
+                  Login
+                </Button>,
+                <a href="/login_client" style={{ textDecoration: "none" }}>Cliente</a>,
+              ]}
+              style={{
+                width: 500,
+              }}
             >
-              © 2023 - Adivogado Digital
-            </div>
-          </footer>
-        </>
-      </div>
+              <Title level={2}>Advogado Digital</Title>
+
+              <Paragraph>Faça login em sua conta</Paragraph>
+
+              <Form.Item
+                name="username"
+                rules={[
+                  {
+                    required: true,
+                    message: 'Informe o CPF!',
+                  },
+                ]}
+              >
+                <Input prefix={<UserOutlined className="site-form-item-icon" />} placeholder="Username" />
+              </Form.Item>
+              <Form.Item
+                name="password"
+                rules={[
+                  {
+                    required: true,
+                    message: 'Informe a Senha!',
+                  },
+                ]}
+              >
+                <Input.Password
+                  prefix={<LockOutlined className="site-form-item-icon" />}
+                  type="password"
+                  placeholder="Password"
+                />
+              </Form.Item>
+            </Card>
+          </Flex>
+        </Form>
+    </>
   )
 }
 
-export default Loginpage
+export default LoginAdc

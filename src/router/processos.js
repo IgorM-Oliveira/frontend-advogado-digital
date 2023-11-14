@@ -30,3 +30,35 @@ export const editProcessos = async (id, data) =>
 
 export const deleteProcessos = async (id) =>
     await api.delete(`/processos/${id}`);
+
+export const uploadProcessosRemove = async (id, data) =>
+    await api.post(`/processos/upload/remove/${id}`, data);
+
+export const uploadProcessosInsert = async (data) =>
+    await api.post(`/processos/upload/insert`, data);
+
+export const uploadProcessos = async (id, data) => {
+    let result = null
+    for (const file of data) {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const response = await api.post(`/processos/upload/${id}`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            result = response.data;
+        } catch (error) {
+            throw error;
+        }
+    }
+    return result
+};
+
+export const getDiarioOficial = async (form) => {
+    const { data } = await api.post('/processos/getDiarioOficial', form)
+    return data
+};
