@@ -355,9 +355,11 @@ function Processos() {
       }}
     >
       {status && <>
-        <Space size="middle">
-          <Button type="primary" onClick={() => onCreate()}>Cadastrar</Button>
-        </Space>
+        {(user.function === 'advogado') && <>
+          <Space size="middle">
+            <Button type="primary" onClick={() => onCreate()}>Cadastrar</Button>
+          </Space>
+        </>}
         <Divider />
         <Table dataSource={processos}>
           <Column title="Número" dataIndex="numero" key="numero" />
