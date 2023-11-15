@@ -84,6 +84,7 @@ function Clients() {
               })
             })
       } else {
+        value.advogado_id = user.id
         await createClient(value)
             .then(async () => {
               setEdit([false, null])
@@ -172,6 +173,8 @@ function Clients() {
   }
 
   const onCreate = async ( ) => {
+    form.resetFields();
+    
     setStatus(false)
     setEdit([false, null])
   }
@@ -297,7 +300,7 @@ function Clients() {
               <Form.Item
                   name="data_nasc"
                   label="Data de Nascimento"
-                  initialValue={dayjs(client.data_nasc, "YYYY-MM-DD")}
+                  initialValue={client.data_nasc ? dayjs(client.data_nasc, "YYYY-MM-DD") : null}
               >
                 <DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} />
               </Form.Item>
@@ -416,7 +419,7 @@ function Clients() {
             <Col span={24}>
               <Space size="middle">
                 <Button type="primary" htmlType="submit">Salvar</Button>
-                <Button type="primary" danger onClick={() => setStatus(true)}>Cancelar</Button>
+                <Button type="primary" danger onClick={() => window.location.reload()}>Cancelar</Button>
               </Space>
             </Col>
           </Row>

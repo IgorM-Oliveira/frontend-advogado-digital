@@ -291,7 +291,7 @@ function Advogado() {
               <Form.Item
                   name="data_nasc"
                   label="Data de Nascimento"
-                  initialValue={dayjs(attorney.data_nasc, "YYYY-MM-DD")}
+                  initialValue={attorney.data_nasc ? dayjs(attorney.data_nasc, "YYYY-MM-DD") : null}
               >
                 <DatePicker format="DD/MM/YYYY" style={{ width: '100%' }} />
               </Form.Item>

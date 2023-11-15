@@ -207,7 +207,6 @@ function Processos() {
   }
   
   const processoPdf = async () => {
-    const list = []
     await sincronizar()
     
     pdfMake.vfs = pdfFonts.pdfMake.vfs;
@@ -292,10 +291,10 @@ function Processos() {
   useEffect(() => {
     (async () => {
       try{
-        console.log(user)
         if (user.function === 'advogado') {
           const getTipos = await getTiposProcessos()
           const getClientesVinculados = await getClientVinculados(user.id)
+          const processosVinculados = await getProcessosVinculados(user.id)
           
           const tipos_array= []
           const clientes_array= []
@@ -313,7 +312,7 @@ function Processos() {
           
           const processos = []
           
-          for (const item of await getProcessosVinculados(user.id)) {
+          for (const item of processosVinculados) {
             item.key = item.id
             processos.push(item)
           }
@@ -341,7 +340,9 @@ function Processos() {
           
           setProcessos(processos)
         }
-      } catch (error) {
+      } catch (error)   {
+        console.log('error')
+        console.log(error)
         /*localStorage.removeItem("authTokens")
         history.push('/');*/
       }

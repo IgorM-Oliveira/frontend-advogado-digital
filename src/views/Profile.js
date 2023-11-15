@@ -48,29 +48,10 @@ function Profile() {
     }
   };
 
-  const handleSubmit = async e => {
-    e.preventDefault()
-
-    const data = []
-
-    data.push({nome: e.target.nome.value,
-      contato: e.target.contato.value,
-      cpf: e.target.cpf.value,
-      data_nasc: e.target.data_nasc.value,
-      sexo: e.target.sexo.value,
-      logradouro: e.target.logradouro.value,
-      endereco: e.target.endereco.value,
-      cep: e.target.cep.value,
-      numberEnde: e.target.numberEnde.value,
-      complemento: e.target.complemento.value,
-      cidade: e.target.cidade.value,
-      bairro: e.target.bairro.value,
-      emial: e.target.emial.value,
-      senha: e.target.new_senha.value})
-
-    if (e.target.new_senha.value === e.target.repeat_senha.value) {
+  const handleSubmit = async (value) => {
+    // if (value.new_senha === value.repeat_senha) {
       if (user.function === 'advogado') {
-        await api.put(`/advogados/${user?.id}`, ...data)
+        await api.put(`/advogados/${user?.id}`, value)
             .then(() => {
               history.push('/');
             })
@@ -80,17 +61,6 @@ function Profile() {
       } else {
         await api.get(`/clientes/${user?.id}`)
       }
-    } else {
-      swal.fire({
-        title: "Login bem-sucedido!",
-        icon: "success",
-        toast: true,
-        timer: 3000,
-        position: 'top-right',
-        timerProgressBar: true,
-        showConfirmButton: false,
-      })
-    }
   }
 
   const api = useAxios();
